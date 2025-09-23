@@ -10,6 +10,9 @@ pages:
     - python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out public/essays.json || echo "fetch failed, using committed essays.json if present"
     - cp index.html public/index.html
     - cp -f essays.json public/essays.json || true
+    # Debug: show what's in public/ before publishing
+    - echo "Contents of public/ directory:"
+    - ls -la public/
   artifacts:
     paths:
       - public
