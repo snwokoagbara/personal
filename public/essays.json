@@ -1,0 +1,9 @@
+[
+  {
+    "slug": "welcome",
+    "title": "Welcome",
+    "link": "https://chrisnwoko.substack.com/p/welcome",
+    "date": "2020-01-01",
+    "html": "<p>This is a sample essay used as a local fallback so GitLab Pages can display essays without fetching Substack at runtime.</p>"
+  }
+]
