@@ -6,7 +6,6 @@ stages:
 pages:
   stage: build
   script:
-    - pip install -r requirements.txt
     - mkdir -p public
     - python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out public/essays.json || echo "fetch failed, using committed essays.json if present"
     - cp index.html public/index.html
@@ -14,5 +13,9 @@ pages:
   artifacts:
     paths:
       - public
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  # Run daily at 2 AM UTC to fetch new posts
+  schedule:
+    - cron: "0 2 * * *"
