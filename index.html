@@ -113,7 +113,9 @@
   </aside>
 
   <script>
-    const SUBSTACK_FEED = 'https://chrisnwoko.substack.com/feed';
+  const SUBSTACK_FEED = 'https://chrisnwoko.substack.com/feed';
+  // Local fallback file served by GitLab Pages (or prebuilt during CI)
+  const LOCAL_ESSAYS = '/essays.json';
     const $ = (id)=>document.getElementById(id);
     const yearEl = $('year');
     const listEl = $('essayList');
@@ -130,8 +132,20 @@
     }
 
     async function loadSubstack(){
+      // Try a local JSON file first (avoids CORS issues on Pages). If not present, fall back to fetching Substack RSS.
+      try{
+        const local = await fetch(LOCAL_ESSAYS, {cache: 'no-cache'});
+        if(local.ok){
+          console.debug('Loaded essays from local', LOCAL_ESSAYS);
+          return await local.json();
+        }
+      }catch(e){ console.debug('No local essays.json available', e); }
+
       const rss = await fetchRSS(SUBSTACK_FEED);
-      if(!rss) return [];
+      if(!rss) {
+        console.warn('Failed to load Substack RSS and no local fallback present');
+        return [];
+      }
       const parser = new DOMParser();
       const xml = parser.parseFromString(rss,'text/xml');
       const items = Array.from(xml.getElementsByTagName('item'));

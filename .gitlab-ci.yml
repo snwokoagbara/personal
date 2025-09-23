@@ -1,0 +1,18 @@
+image: python:3.11-slim
+
+stages:
+  - build
+
+pages:
+  stage: build
+  script:
+    - pip install -r requirements.txt
+    - mkdir -p public
+    - python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out public/essays.json || echo "fetch failed, using committed essays.json if present"
+    - cp index.html public/index.html
+    - cp -f essays.json public/essays.json || true
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
