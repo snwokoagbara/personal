@@ -115,7 +115,14 @@
   <script>
   const SUBSTACK_FEED = 'https://chrisnwoko.substack.com/feed';
   // Local fallback file served by GitLab Pages (or prebuilt during CI)
-  const LOCAL_ESSAYS = '/essays.json';
+    // Try several possible local paths for the prebuilt JSON. This covers different Pages hosting setups
+    // (site root, same directory, public folder, and relative path when site served under a project prefix).
+    const LOCAL_ESSAYS_CANDIDATES = [
+      '/essays.json',    // site root
+      './essays.json',   // relative
+      'essays.json',     // same directory
+      '/public/essays.json' // if prebuilt into a public/ folder
+    ];
     const $ = (id)=>document.getElementById(id);
     const yearEl = $('year');
     const listEl = $('essayList');
@@ -133,13 +140,16 @@
 
     async function loadSubstack(){
       // Try a local JSON file first (avoids CORS issues on Pages). If not present, fall back to fetching Substack RSS.
-      try{
-        const local = await fetch(LOCAL_ESSAYS, {cache: 'no-cache'});
-        if(local.ok){
-          console.debug('Loaded essays from local', LOCAL_ESSAYS);
-          return await local.json();
-        }
-      }catch(e){ console.debug('No local essays.json available', e); }
+      // Try each candidate path until one returns OK
+      for(const candidate of LOCAL_ESSAYS_CANDIDATES){
+        try{
+          const local = await fetch(candidate, {cache: 'no-cache'});
+          if(local.ok){
+            console.debug('Loaded essays from local', candidate);
+            return await local.json();
+          }
+        }catch(e){ /* ignore and try next candidate */ }
+      }
 
       const rss = await fetchRSS(SUBSTACK_FEED);
       if(!rss) {
