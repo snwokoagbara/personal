@@ -115,13 +115,12 @@
   <script>
   const SUBSTACK_FEED = 'https://chrisnwoko.substack.com/feed';
   // Local fallback file served by GitLab Pages (or prebuilt during CI)
-    // Try several possible local paths for the prebuilt JSON. This covers different Pages hosting setups
-    // (site root, same directory, public folder, and relative path when site served under a project prefix).
+    // GitHub Pages specific paths for essays.json
     const LOCAL_ESSAYS_CANDIDATES = [
-      '/essays.json',    // site root
-      './essays.json',   // relative
-      'essays.json',     // same directory
-      '/public/essays.json' // if prebuilt into a public/ folder
+      './essays.json',              // relative to current path
+      '/personal/essays.json',      // project pages path
+      'essays.json',               // same directory
+      '/essays.json'               // root (for user pages)
     ];
     const $ = (id)=>document.getElementById(id);
     const yearEl = $('year');
