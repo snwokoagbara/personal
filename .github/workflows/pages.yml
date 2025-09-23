@@ -1,40 +1,63 @@
 name: GitHub Pages
 
 on:
+  # Runs on pushes targeting the default branch
   push:
     branches: [ main ]
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+  # Runs every day at 2 AM UTC
   schedule:
-    - cron: '0 2 * * *'  # Run daily at 2 AM UTC
-  workflow_dispatch:      # Allow manual triggers
+    - cron: '0 2 * * *'
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write     # Needed to push to gh-pages branch
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
       - name: Generate essays.json
         run: |
-          python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out essays.json || true
+          mkdir -p ./_site
+          python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out ./_site/essays.json || true
           # Always ensure we have a valid essays.json
-          if [ ! -f essays.json ]; then
-            echo '[]' > essays.json
+          if [ ! -f ./_site/essays.json ]; then
+            echo '[]' > ./_site/essays.json
           fi
-
-      - name: Deploy to GitHub Pages
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          cp -f essays.json public/essays.json || mkdir -p public && cp essays.json public/essays.json
-          cp index.html public/index.html
+          cp index.html ./_site/
           
-          git add public
-          git commit -m "chore: update essays.json and deploy pages"
-          git push origin main
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
