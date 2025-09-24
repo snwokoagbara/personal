@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Christopher Nwokoagbara</title>
+  <meta name="description" content="Chris Nwoko — writing, research, and reflections." />
+  <style>
+    :root { --line:#eee; --ink:#111; --muted:#555; --bg:#fff; }
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+    /* Header */
+    header{padding:28px 20px 10px;border-bottom:1px solid var(--line)}
+    .wrap{max-width:960px;margin:0 auto}
+    .mast{margin-bottom:8px}
+    .site-title{margin:0;font-size:28px;letter-spacing:-.01em;font-weight:700}
+    .subline{margin:6px 0 0;color:var(--muted);font-size:14px}
+    nav.nav-links{margin-top:10px;display:flex;gap:16px;font-size:14px}
+    nav.nav-links a{color:var(--muted);text-decoration:none;position:relative}
+    nav.nav-links a:hover{color:var(--ink)}
+
+    /* Body */
+    main{max-width:720px;margin:0 auto;padding:24px 20px}
+    section{margin:40px 0}
+    h2{font-size:18px;margin:0 0 10px}
+    a{color:inherit;text-decoration:none}
+    a:hover{color:var(--ink)}
+
+    /* Lists */
+    .list{list-style:none;padding:0;margin:0}
+    .list li{margin:10px 0;display:block}
+    .list li span{display:block;color:#777;font-size:13px;margin-left:0}
+
+    /* Footer */
+    footer{border-top:1px solid var(--line);padding:20px;text-align:center;font-size:14px;color:var(--muted)}
+
+    /* Reader overlay */
+    .reader{position:fixed;inset:0;display:none;background:rgba(0,0,0,.15);overflow:auto;z-index:10}
+    .reader.open{display:block}
+    .sheet{max-width:760px;margin:6vh auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
+    .toolbar{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:8px;margin:-18px -18px 10px;padding:12px 14px;background:#fff;border-bottom:1px solid var(--line);border-radius:10px 10px 0 0}
+    .btn{appearance:none;border:none;background:transparent;padding:0;border-radius:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:inherit;font-size:14px}
+    .btn:hover{color:var(--ink)}
+    .btn svg{width:16px;height:16px}
+    .meta{color:var(--muted);font-size:13px}
+    .content img{max-width:100%;height:auto}
+    .content figure{margin:1em 0}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="mast">
+        <h1 class="site-title">Notebook</h1>
+        <p class="subline">by <strong>Chris Nwoko</strong> · essays, notes, and research</p>
+      </div>
+      <nav class="nav-links">
+        <a href="#about">About</a>
+        <a href="#essays">Essays</a>
+        <a href="#publications">Publications</a>
+        <a href="#links">Links</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section id="about">
+      <h2>About</h2>
+      <p>I work across analytics, product, and operations. I care about useful tools, legible systems, and ideas that compound over time. This is where I think and track milestones.</p>
+    </section>
+
+    <section id="essays">
+      <h2>Essays</h2>
+      <ul id="essayList" class="list"></ul>
+    </section>
+
+    <section id="publications">
+      <h2>Publications</h2>
+      <ul class="list">
+        <li><a href="https://www.academia.edu/43000531/Framework_for_Effective_Digital_Transformation_of_Manufacturing_Organizations_using_the_Balanced_Scorecard_Model" target="_blank" class="external">Framework for Effective Digital Transformation of Manufacturing Organizations using the Balanced Scorecard Model</a><span>Academia.edu, 2020</span></li>
+      </ul>
+    </section>
+
+    <section id="links">
+      <h2>Links</h2>
+      <ul class="list">
+        <li><a href="https://twitter.com/ivansc_chris" target="_blank" class="external">Twitter: @ivansc_chris</a></li>
+        <li><a href="https://www.linkedin.com/in/csnwokoagbara" target="_blank" class="external">LinkedIn: @csnwokoagbara</a></li>
+      </ul>
+    </section>
+
+    <section id="contact">
+      <h2>Contact</h2>
+      <p><a href="mailto:snwokoagbara@gmail.com" class="external">snwokoagbara@gmail.com</a></p>
+    </section>
+  </main>
+  <footer>
+    © <span id="year"></span> Chris Nwoko
+  </footer>
+
+  <!-- Reader -->
+  <aside id="reader" class="reader" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="toolbar">
+        <button id="closeReader" class="btn" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+        <div id="readerMeta" class="meta"></div>
+      </div>
+      <h2 id="readerTitle" style="margin:4px 0 6px"></h2>
+      <article id="readerContent" class="content"></article>
+    </div>
+  </aside>
+
+  <script>
+  const SUBSTACK_FEED = 'https://chrisnwoko.substack.com/feed';
+  // Local fallback file served by GitLab Pages (or prebuilt during CI)
+    // GitHub Pages specific paths for essays.json
+    const LOCAL_ESSAYS_CANDIDATES = [
+      './essays.json',              // relative to current path
+      '/personal/essays.json',      // project pages path
+      'essays.json',               // same directory
+      '/essays.json'               // root (for user pages)
+    ];
+    const $ = (id)=>document.getElementById(id);
+    const yearEl = $('year');
+    const listEl = $('essayList');
+
+    function text(el, tag){ const n = el.getElementsByTagName(tag)[0]; return n ? (n.textContent||'').trim() : ''; }
+    function toISO(d){ try{ return new Date(d).toISOString().slice(0,10); }catch{ return ''; } }
+    function slugFrom(link,title){ const part = (link||'').split('/').filter(Boolean).pop(); return part || (title||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+
+    async function fetchRSS(url){
+      try{ const r = await fetch(url); if(r.ok) return await r.text(); }catch{}
+      try{ const r = await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url)); if(r.ok) return await r.text(); }catch{}
+      try{ const r = await fetch('https://r.jina.ai/http://chrisnwoko.substack.com/feed'); if(r.ok) return await r.text(); }catch{}
+      return null;
+    }
+
+    async function loadSubstack(){
+      // Try a local JSON file first (avoids CORS issues on Pages). If not present, fall back to fetching Substack RSS.
+      // Try each candidate path until one returns OK
+      for(const candidate of LOCAL_ESSAYS_CANDIDATES){
+        try{
+          const local = await fetch(candidate, {cache: 'no-cache'});
+          if(local.ok){
+            console.debug('Loaded essays from local', candidate);
+            return await local.json();
+          }
+        }catch(e){ /* ignore and try next candidate */ }
+      }
+
+      const rss = await fetchRSS(SUBSTACK_FEED);
+      if(!rss) {
+        console.warn('Failed to load Substack RSS and no local fallback present');
+        return [];
+      }
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(rss,'text/xml');
+      const items = Array.from(xml.getElementsByTagName('item'));
+      return items.map(item=>{
+        const title = text(item,'title');
+        const link = text(item,'link');
+        const date = toISO(text(item,'pubDate'));
+        const desc = text(item,'description');
+        const contentNode = item.getElementsByTagName('content:encoded')[0] || item.getElementsByTagName('content')[0];
+        const html = contentNode ? contentNode.textContent : desc;
+        return { slug: slugFrom(link,title), title, link, date, html };
+      });
+    }
+
+    function renderList(posts){
+      if(!posts.length){ listEl.innerHTML = '<li>No essays yet.</li>'; return; }
+      const items = posts.map(p=>{
+        return `<li><a href="#/essay/${p.slug}" class="internal">${p.title}</a><span>${p.date ? new Date(p.date).toLocaleDateString('en-US',{year:'numeric', month:'long'}) : ''}</span></li>`;
+      }).join('');
+      listEl.innerHTML = items;
+    }
+
+    function openReader(post){
+      $('readerTitle').textContent = post.title;
+      $('readerMeta').textContent = post.date ? new Date(post.date).toLocaleDateString('en-US',{year:'numeric', month:'long'}) : '';
+      $('readerContent').innerHTML = post.html || `<p><a href="${post.link}" target="_blank" rel="noopener" class="external">Read on Substack</a></p>`;
+      const r = $('reader'); r.classList.add('open'); r.setAttribute('aria-hidden','false');
+    }
+    function closeReader(){ const r=$('reader'); r.classList.remove('open'); r.setAttribute('aria-hidden','true'); if(location.hash.startsWith('#/essay/')) history.pushState({},'',location.pathname+location.search); }
+
+    function handleHash(){
+      const m = location.hash.match(/^#\/essay\/(.+)$/);
+      if(!m){ closeReader(); return; }
+      const slug = m[1];
+      const post = window.__POSTS.find(p=>p.slug===slug);
+      if(post) openReader(post);
+    }
+
+    $('closeReader').addEventListener('click', closeReader);
+    window.addEventListener('hashchange', handleHash);
+
+    (async function init(){
+      yearEl.textContent = new Date().getFullYear();
+      const posts = await loadSubstack();
+      window.__POSTS = posts;
+      renderList(posts);
+      handleHash();
+    })();
+  </script>
+</body>
+</html>
