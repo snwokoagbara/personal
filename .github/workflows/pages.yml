@@ -1,25 +1,30 @@
-name: Update Essays
+name: Deploy to GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch
   push:
     branches: [ main ]
-    paths:
-      - 'scripts/**'
-      - '.github/workflows/pages.yml'
   
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   
-  # Runs every day at 2 AM UTC
+  # Runs daily to fetch new essays
   schedule:
     - cron: '0 2 * * *'
 
+# Sets permissions
 permissions:
-  contents: write  # Needed to commit essays.json
+  contents: write    # Needed to update essays.json
+  pages: write      # Needed to deploy to Pages
+  id-token: write   # Needed to deploy to Pages
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  update-essays:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,21 +37,37 @@ jobs:
 
       - name: Generate essays.json
         run: |
+          # Try to fetch latest essays
           python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out essays.json || true
-          # Always ensure we have a valid essays.json
           if [ ! -f essays.json ]; then
             echo '[]' > essays.json
           fi
 
-      - name: Commit and push if changed
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+        
+      - name: Build pages artifact
         run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git add essays.json
-          git diff --staged --quiet || (git commit -m "update: fetch latest essays" && git push)
-          
-      - name: Upload artifact
+          # Create _site directory with all needed files
+          mkdir -p _site
+          cp index.html _site/
+          cp essays.json _site/
+
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
 
   deploy:
     environment:
