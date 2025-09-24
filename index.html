@@ -137,16 +137,26 @@
     }
 
     async function loadSubstack(){
-      // Try a local JSON file first (avoids CORS issues on Pages). If not present, fall back to fetching Substack RSS.
-      // Try each candidate path until one returns OK
-      for(const candidate of LOCAL_ESSAYS_CANDIDATES){
-        try{
-          const local = await fetch(candidate, {cache: 'no-cache'});
-          if(local.ok){
-            console.debug('Loaded essays from local', candidate);
-            return await local.json();
-          }
-        }catch(e){ /* ignore and try next candidate */ }
+      // Try to fetch from Substack first
+      try {
+        const rss = await fetchRSS(SUBSTACK_FEED);
+        if(rss) {
+          console.debug('Successfully loaded Substack RSS feed');
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(rss,'text/xml');
+          const items = Array.from(xml.getElementsByTagName('item'));
+          return items.map(item=>{
+            const title = text(item,'title');
+            const link = text(item,'link');
+            const date = toISO(text(item,'pubDate'));
+            const desc = text(item,'description');
+            const contentNode = item.getElementsByTagName('content:encoded')[0] || item.getElementsByTagName('content')[0];
+            const html = contentNode ? contentNode.textContent : desc;
+            return { slug: slugFrom(link,title), title, link, date, html };
+          });
+        }
+      } catch(e) {
+        console.debug('Failed to load Substack feed, trying local files:', e);
       }
 
       const rss = await fetchRSS(SUBSTACK_FEED);

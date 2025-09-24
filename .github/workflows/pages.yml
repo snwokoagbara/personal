@@ -38,9 +38,11 @@ jobs:
       - name: Generate essays.json
         run: |
           # Try to fetch latest essays
-          python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out essays.json || true
-          if [ ! -f essays.json ]; then
-            echo '[]' > essays.json
+          if python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out essays.json; then
+            echo "Successfully fetched Substack essays"
+          else
+            echo "Failed to fetch Substack feed - not creating essays.json"
+            exit 0  # Continue workflow but don't create empty file
           fi
 
       - name: Setup Pages
