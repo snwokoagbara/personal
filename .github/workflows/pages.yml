@@ -1,9 +1,12 @@
-name: GitHub Pages
+name: Update Essays
 
 on:
   # Runs on pushes targeting the default branch
   push:
     branches: [ main ]
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/pages.yml'
   
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -12,19 +15,11 @@ on:
   schedule:
     - cron: '0 2 * * *'
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  contents: write  # Needed to commit essays.json
 
 jobs:
-  build:
+  update-essays:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,18 +30,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-
       - name: Generate essays.json
         run: |
-          mkdir -p ./_site
-          python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out ./_site/essays.json || true
+          python scripts/fetch_essays.py --feed https://chrisnwoko.substack.com/feed --out essays.json || true
           # Always ensure we have a valid essays.json
-          if [ ! -f ./_site/essays.json ]; then
-            echo '[]' > ./_site/essays.json
+          if [ ! -f essays.json ]; then
+            echo '[]' > essays.json
           fi
-          cp index.html ./_site/
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add essays.json
+          git diff --staged --quiet || (git commit -m "update: fetch latest essays" && git push)
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2

@@ -115,12 +115,11 @@
   <script>
   const SUBSTACK_FEED = 'https://chrisnwoko.substack.com/feed';
   // Local fallback file served by GitLab Pages (or prebuilt during CI)
-    // GitHub Pages specific paths for essays.json
+    // Look for essays.json in the repository root
     const LOCAL_ESSAYS_CANDIDATES = [
-      './essays.json',              // relative to current path
-      '/personal/essays.json',      // project pages path
-      'essays.json',               // same directory
-      '/essays.json'               // root (for user pages)
+      'essays.json',               // same directory as index.html
+      './essays.json',             // explicit relative path
+      '/personal/essays.json'      // absolute path for project pages
     ];
     const $ = (id)=>document.getElementById(id);
     const yearEl = $('year');
